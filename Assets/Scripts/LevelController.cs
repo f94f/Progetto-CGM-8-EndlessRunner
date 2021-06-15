@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class LevelController : MonoBehaviour
 {
+    public Player player;
+
     public LevelPice[] levelPices;
     public Transform _camera;
     public int drawDistance;
@@ -45,6 +47,9 @@ public class LevelController : MonoBehaviour
 
     void Update()
     {
+        if (player.hasDie)
+            return;
+
         _camera.transform.position = Vector3.MoveTowards(_camera.transform.position, _camera.transform.position + Vector3.forward, Time.deltaTime * speed);
         currentCamStep = (int)(_camera.transform.position.z / pieceLength);
         if (currentCamStep != lastCamStep)
@@ -63,6 +68,9 @@ public class LevelController : MonoBehaviour
     {
         int piceIndex = probabilityList[Random.Range(0, probabilityList.Count)];
         pieceLength = levelPices[piceIndex].prefab.GetComponent<Renderer>().bounds.size.z;
+        // X -> 0 perche si
+        // Y -> 0 anche perche si
+        // Z -> posizione attuale della telecamera (la prima strada + la quantitàa totale di strade che ci sono) * la lunghezza della strada
         GameObject newLevelPiece = Instantiate(levelPices[piceIndex].prefab, new Vector3(0f, 0f, (currentCamStep + activatePieces.Count) * pieceLength), Quaternion.identity);
         activatePieces.Enqueue(newLevelPiece);
 

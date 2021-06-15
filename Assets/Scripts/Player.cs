@@ -25,6 +25,12 @@ public class Player : MonoBehaviour
         }
     }
 
+    public bool hasDie;
+
+    public Transform attackPos;
+    public float attackrange;
+    public LayerMask whatIsObstacle;
+
     void Start()
     {
         _animator = GetComponent<Animator>();
@@ -38,10 +44,14 @@ public class Player : MonoBehaviour
 
     void Update()
     {
+        if (hasDie)
+            return;
         if (Input.GetButtonDown("Horizontal") && Input.GetAxisRaw("Horizontal") > 0)
             MoveRigth();
         if (Input.GetButtonDown("Horizontal") && Input.GetAxisRaw("Horizontal") < 0)
             MoveLeft();
+        if (Input.GetKeyDown(KeyCode.Q))
+            Attack();
         if (!jumping && (Input.GetAxisRaw("Vertical") > 0 || Input.GetKeyDown(KeyCode.Space)))
             jumping = true;
         
@@ -60,6 +70,13 @@ public class Player : MonoBehaviour
         transform.position = Vector3.MoveTowards(transform.position, new Vector3(xPos[xPosIndex], floorHeigth + yPos, transform.position.z), Time.deltaTime * speed);
     }
 
+    private void Die()
+    {
+        _animator.SetTrigger("Die");
+        hasDie = true;
+        Debug.Log("Ouch");
+    }
+
     private void MoveRigth()
     {
         xPosIndex++;
@@ -72,5 +89,24 @@ public class Player : MonoBehaviour
         xPosIndex--;
         if (xPosIndex < 0)
             xPosIndex = 0;
+    }
+
+    private void Attack()
+    {
+        _animator.SetTrigger("Kick");
+        Vector3 pos = attackPos.position;
+        pos.z += 2f;
+        Collider[] obstacleToKick = Physics.OverlapCapsule(attackPos.position, pos, attackrange, whatIsObstacle);
+        if (obstacleToKick.Length > 0)
+            Destroy(obstacleToKick[0].gameObject);
+        //foreach (Collider c in obstacleToKick)
+        //{
+        //}
+    }
+
+    private void OnTriggerEnter(Collider other)
+    {
+        if (other.tag == "Obstacle")
+            Die();
     }
 }
